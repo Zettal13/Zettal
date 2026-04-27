@@ -1,25 +1,28 @@
 const express = require('express');
 const mongoose = require('mongoose')
+const cors = require('cors')
+require('dotenv').config()
+console.log('JWT_SECRET',process.env.JWT_SECRET)
 
 const app = express()
-const PORT = 8000
+const PORT = process.env.PORT || 8000
 
-mongoose.connect('mongodb+srv://Ayushsingh:Ayushsingh13@cluster0.jyebrua.mongodb.net/Zettal')
-.then(()=>{
-    console.log('connected to database')
-})
-.catch((err)=>{
-    console.log(err)
-})
+app.use(cors())
+app.use(express.json())
+
+const authRoutes = require('./routes/authRoutes')
+app.use('/api/auth',authRoutes)
 
 app.get("/",(req,res)=>{
     res.send("Hello world")
 })
-app.get("/create", async (req, res) => {
-  const User = mongoose.model("User", new mongoose.Schema({ name: String }));
 
-  const data = await User.create({ name: "Test User" });
 
-  res.json(data);
-});
-app.listen(PORT,()=>console.log(`Server is running at ${PORT}`))
+mongoose.connect(process.env.DB_URL)
+.then(()=>{
+    console.log('connected to database')
+    app.listen(PORT,()=>console.log(`Server is running at ${PORT}`))
+})
+.catch((err)=>{
+    console.log('DB connection error',err)
+})
