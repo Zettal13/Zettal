@@ -2,15 +2,22 @@ const User = require("../models/users");
 
 exports.getAllUsers = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 15;
+    const offset = (page - 1) * limit;
     const skill = req.query.skill;
+    const location = req.query.location;
 
     let query = {};
 
     if (skill) {
       query.skillsOffered = { $regex: skill, $options: "i" };
     }
+    if (req.query.location) {
+      query.location = { $regex: location, $options: "i" };
+    }
 
-    const users = await User.find(query).select("-password");
+    const users = await User.find(query).skip(offset).limit(limit).select("-password");
     res.status(200).json(users);
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
@@ -37,18 +44,15 @@ exports.updateUser = async (req, res) => {
         .json({ message: "Not authorized to update this profile" });
     }
 
-    const { name, bio, avatar, location, skillsOffered, skillsWanted } =
-      req.body;
+    const { name, bio, location, skillsOffered } = req.body;
 
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,
       {
         name,
         bio,
-        avatar,
         location,
         skillsOffered,
-        skillsWanted,
       },
       { new: true, runValidators: true },
     ).select("-password");

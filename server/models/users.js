@@ -31,9 +31,6 @@ const userSchema = new mongoose.Schema(
     skillsOffered: [
       String,
     ],
-    skillsWanted: [
-      String,
-    ],
     location: {
       type: String,
       default: '',

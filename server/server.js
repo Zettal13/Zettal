@@ -3,10 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose')
 const cors = require('cors')
 
-
-
 console.log('JWT_SECRET',process.env.JWT_SECRET)
-
 
 const app = express()
 const PORT = process.env.PORT || 8000
@@ -22,7 +19,6 @@ app.use('/api/users',userRoutes)
 app.get("/",(req,res)=>{
     res.send("Hello world")
 })
-
 
 mongoose.connect(process.env.DB_URL)
 .then(()=>{
