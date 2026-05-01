@@ -1,7 +1,12 @@
+require('dotenv').config()
 const express = require('express');
 const mongoose = require('mongoose')
 const cors = require('cors')
-require('dotenv').config()
+
+
+
+console.log('JWT_SECRET',process.env.JWT_SECRET)
+
 
 const app = express()
 const PORT = process.env.PORT || 8000
@@ -10,7 +15,9 @@ app.use(cors())
 app.use(express.json())
 
 const authRoutes = require('./routes/authRoutes')
+const userRoutes = require('./routes/userRoutes')
 app.use('/api/auth',authRoutes)
+app.use('/api/users',userRoutes)
 
 app.get("/",(req,res)=>{
     res.send("Hello world")
