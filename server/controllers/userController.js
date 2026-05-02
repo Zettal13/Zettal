@@ -28,7 +28,7 @@ exports.getUsersById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select("-password");
     if (!user) {
-      res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "User not found" });
     }
     res.status(200).json(user);
   } catch (err) {
@@ -65,3 +65,34 @@ exports.updateUser = async (req, res) => {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
+
+exports.getMe = async(req,res)=>{
+  try{
+    console.log('getMe req.user',req.user)
+    const user =await User.findById(req.user.id).select('-password')
+    console.log('getMe user',user)
+    if(!user){
+      return res.status(404).json({message:'User not found'})
+    }
+    res.status(200).json(user)
+  }catch(err){
+    res.status(500).json({message:'Server error',error:err.message})
+  }
+}
+
+exports.deleteUser = async(req,res)=>{
+  try{
+    if(req.user.id!== req.params.id){
+      return res.status(403).json({message:'Not authorized to delete this account'})
+    }
+
+    const user = await User.findByIdAndDelete(req.params.id)
+
+    if(!user){
+      return res.status(404).json({message:'User not found'})
+    }
+    res.status(200).json({message:'Account deleted successfully'})
+  }catch(err){
+    res.status(500).json({message:'Server error',error:err.message})
+  }
+}
