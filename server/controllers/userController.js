@@ -36,14 +36,61 @@ exports.getUsersById = async (req, res) => {
   }
 };
 
-exports.updateUser = async (req, res) => {
-  try {
-    if (req.user.id !== req.params.id) {
-      return res
-        .status(403)
-        .json({ message: "Not authorized to update this profile" });
+exports.getMe = async(req,res)=>{
+  try{
+    const user =await User.findById(req.user.id).select('-password')
+    if(!user){
+      return res.status(404).json({message:'User not found'})
+    }
+    res.status(200).json(user)
+  }catch(err){
+    res.status(500).json({message:'Server error',error:err.message})
+  }
+}
+
+exports.deleteMe = async(req,res)=>{
+  try{
+    const user = await User.findByIdAndDelete(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
 
+    return res.status(200).json({message:'Account deleted successfully'});
+
+  }catch(err){
+    res.status(500).json({message:'Server error',error:err.message});
+  }
+}
+
+exports.updateMe = async(req,res)=>{
+  try{
+    const { name, bio, location, skillsOffered } = req.body;
+    const updates = {};
+
+    if (name !== undefined) updates.name = name;
+    if (bio !== undefined) updates.bio = bio;
+    if (location !== undefined) updates.location = location;
+    if (skillsOffered !== undefined) updates.skillsOffered = skillsOffered;
+
+    const updatedUser = await User.findByIdAndUpdate(req.user.id, updates, 
+      { new: true, runValidators: true }).select("-password");
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json(updatedUser);
+  }
+  catch(err){
+    res.status(500).json({message:'Server error',error:err.message});
+  }
+}
+
+
+// For Admin Side Update and Delete 
+
+exports.updateUser = async (req, res) => {
+  try {
     const { name, bio, location, skillsOffered } = req.body;
 
     const updatedUser = await User.findByIdAndUpdate(
@@ -66,26 +113,8 @@ exports.updateUser = async (req, res) => {
   }
 };
 
-exports.getMe = async(req,res)=>{
-  try{
-    console.log('getMe req.user',req.user)
-    const user =await User.findById(req.user.id).select('-password')
-    console.log('getMe user',user)
-    if(!user){
-      return res.status(404).json({message:'User not found'})
-    }
-    res.status(200).json(user)
-  }catch(err){
-    res.status(500).json({message:'Server error',error:err.message})
-  }
-}
-
 exports.deleteUser = async(req,res)=>{
   try{
-    if(req.user.id!== req.params.id){
-      return res.status(403).json({message:'Not authorized to delete this account'})
-    }
-
     const user = await User.findByIdAndDelete(req.params.id)
 
     if(!user){
